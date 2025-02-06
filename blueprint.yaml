@@ -1,0 +1,68 @@
+blueprint:
+  name: Schneider Wiser 4-Button Controller
+  description: Create automations for the Schneider Wiser 4-button Zigbee device.
+  domain: automation
+  input:
+    zigbee_device:
+      name: Zigbee Device
+      description: The Schneider Wiser button device to use
+      selector:
+        device:
+          integration: zha
+          manufacturer: Schneider Electric
+    top_left_action:
+      name: Top Left Button Action
+      description: Action for top left button (endpoint 21, "on")
+      default: []
+      selector:
+        action: {}
+    top_right_action:
+      name: Top Right Button Action
+      description: Action for top right button (endpoint 21, "off")
+      default: []
+      selector:
+        action: {}
+    bottom_left_action:
+      name: Bottom Left Button Action
+      description: Action for bottom left button (endpoint 22, "on")
+      default: []
+      selector:
+        action: {}
+    bottom_right_action:
+      name: Bottom Right Button Action
+      description: Action for bottom right button (endpoint 22, "off")
+      default: []
+      selector:
+        action: {}
+
+trigger:
+  - platform: event
+    event_type: zha_event
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.event.data.device_ieee == device_attr(zigbee_device, "ieee") }}
+
+action:
+  choose:
+    - conditions:
+        - condition: template
+          value_template: >
+            {{ trigger.event.data.endpoint_id == 21 and trigger.event.data.command == "on" }}
+      sequence: !input top_left_action
+    - conditions:
+        - condition: template
+          value_template: >
+            {{ trigger.event.data.endpoint_id == 21 and trigger.event.data.command == "off" }}
+      sequence: !input top_right_action
+    - conditions:
+        - condition: template
+          value_template: >
+            {{ trigger.event.data.endpoint_id == 22 and trigger.event.data.command == "on" }}
+      sequence: !input bottom_left_action
+    - conditions:
+        - condition: template
+          value_template: >
+            {{ trigger.event.data.endpoint_id == 22 and trigger.event.data.command == "off" }}
+      sequence: !input bottom_right_action
